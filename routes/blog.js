@@ -5,16 +5,19 @@ const Unity = require('../unity');
 
 router.post('/', (req, res, next) => {
     
-    const { p1, p2, p3, p4 } = req.body;
+    const {
+        title,
+        author,
+        date,
+        tag,
+        content,
+        abstract,
+        coverImage
+    } = req.body;
     // 添加博文
-    const sql = `INSERT INTO employee(p1, p2, p3, p4) VALUES('${p1}', '${p2}', '${p3}', '${p4}')`;
+    const sql = `INSERT INTO fengshui(title, author, date, tag, content, abstract, coverImage) VALUES('${title}', '${author}', '${date}', '${tag}', '${content}', '${abstract}', '${coverImage}')`;
     db.query(sql, (err, rows) => {
         if (err) {
-            res.send({
-                code: 1,
-                msg: err,
-                data: '添加错误'
-            })
             res.send(Unity.send(200, 1, 'error'));
         } else {
             res.send(Unity.send(200, 0, 'success'));
@@ -23,16 +26,29 @@ router.post('/', (req, res, next) => {
 
 });
 
-router.get('/get', (req, res, next) => {
+// 博客列表
+router.get('/list', (req, res, next) => {
 
-    const sql = `SELECT * FROM employee WHERE p1='1'`;
+    const sql = `SELECT * FROM fengshui`;
     db.query(sql, (err, rows) => {
         if (err) {
-            res.send({
-                code: 1,
-                msg: err,
-                data: '查询错误'
-            })
+            res.send(Unity.send(200, 1, 'error'));
+        } else {
+            res.send(Unity.send(200, 0, rows));
+        }
+    })
+
+})
+
+/**
+ * 博客详情
+ * @param = id
+ */
+router.get('/detail', (req, res, next) => {
+
+    const sql = `SELECT * FROM fengshui WHERE id = '${req.query.id}'`;
+    db.query(sql, (err, rows) => {
+        if (err) {
             res.send(Unity.send(200, 1, 'error'));
         } else {
             res.send(Unity.send(200, 0, rows));

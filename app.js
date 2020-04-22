@@ -7,6 +7,7 @@ var logger = require('morgan');  // 生成日志
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var blogRouter = require('./routes/blog');
+var uploadRouter = require('./routes/upload');
 
 const bodyParser = require('body-parser');
 
@@ -38,6 +39,7 @@ app.all('*', (req, res, next) => {
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/blog', blogRouter);
+app.use('/upload', uploadRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
