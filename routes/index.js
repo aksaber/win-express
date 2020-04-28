@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var db = require('../db');
 const Unity = require('../unity');
+var WechatAppletPay = require('../wxpay');
 
 router.get('/', function(req, res, next) {
 
@@ -19,5 +20,24 @@ router.get('/', function(req, res, next) {
     })
 
 });
+
+router.get('/wxpay', function(req, res, next) {
+    
+    // 微信支付
+    // const userInfo = req.body;
+    const userInfo = {
+        bookid: '老脑充值',
+        notify_url: 'http://www.weixin.qq.com/wxpay/pay.php',
+        spbill_create_ip: '183.14.28.100',
+        total_fee: 2,
+        openid: 'oUpF8uMuAJO_M2pxb1Q9zNjWeS6o'
+    }
+    console.log(WechatAppletPay, 'WechatAppletPay')
+    var WechatAppletPays = new WechatAppletPay(userInfo);
+    WechatAppletPays.getBrandWCPayParams(userInfo, (data) => {
+        console.log(data);
+    })
+
+})
 
 module.exports = router;
