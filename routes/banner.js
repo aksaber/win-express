@@ -20,6 +20,24 @@ router.post('/add', (req, res, next) => {
 
 })
 
+/**
+ * banner轮播图删除
+ * @params: uid
+ */
+router.post('/del', (req, res, next) => {
+
+    // 删除banner
+    const sql = `DELETE FROM fengshui_banner WHERE uid=${req.body.uid}`;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            res.send(Unity.send(200, 1, 'error'))
+        } else {
+            res.send(Unity.send(200, 0 , 'success'));
+        }
+    })
+
+})
+
 // banner轮播图列表
 router.get('/get', (req, res, next) => {
 
@@ -38,10 +56,16 @@ router.get('/get', (req, res, next) => {
 // 请求排盘api
 router.post('/paipan', (req, res, next) => {
 
-    let ju = escape('拆补局');
-    let D1 = escape('北京');
-    let button1 = escape('排盘');
-    let data = `years=2019&months=4&days=23&hours=14&mins=3&miao=13&ju=${ju}&R1=V1&D1=${D1}&T1=120&button1=${button1}`;
+    const ju = escape('拆补局');
+    const D1 = escape('北京');
+    const button1 = escape('排盘');
+    const year = new Date().getFullYear();
+    const month = new Date().getMonth() + 1;
+    const day = new Date().getDate();
+    const hours = new Date().getHours();
+    const minutes = new Date().getMinutes();
+    const seconds = new Date().getSeconds();
+    const data = `years=${year}&months=${month}&days=${day}&hours=${hours}&mins=${minutes}&miao=${seconds}&ju=${ju}&R1=V1&D1=${D1}&T1=120&button1=${button1}`;
     // let data2 = 'years=1995&months=5&days=29&hours=1&mins=0&miao=0&ju=%B2%F0%B2%B9%BE%D6&R1=V1&D1=%C9%EE%DB%DA&T1=120&button1=%C5%C5%C5%CC'
 
     request({
@@ -57,6 +81,7 @@ router.post('/paipan', (req, res, next) => {
         const reg = /公元.*十干克应/
         let bodys = buf.match(reg);
         // bodys = bodys[0].replace(/<\/font>　<font/g, '</font>&nbsp;<font');
+        
         res.send(Unity.send(200, 1, bodys));
     })
 
