@@ -5,10 +5,10 @@ var cookieParser = require('cookie-parser');  // 解析cookie
 var logger = require('morgan');  // 生成日志
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// var usersRouter = require('./routes/users');
 var blogRouter = require('./routes/blog');
-var uploadRouter = require('./routes/upload');
-var bannerRouter = require('./routes/banner');
+// var uploadRouter = require('./routes/upload');
+// var bannerRouter = require('./routes/banner');
 
 const bodyParser = require('body-parser');
 
@@ -38,10 +38,10 @@ app.all('*', (req, res, next) => {
 
 // 注册路由
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// app.use('/users', usersRouter);
 app.use('/blog', blogRouter);
-app.use('/upload', uploadRouter);
-app.use('/banner', bannerRouter);
+// app.use('/upload', uploadRouter);
+// app.use('/banner', bannerRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

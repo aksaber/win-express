@@ -1,9 +1,16 @@
 const mysql = require('mysql');
+// const pool = mysql.createPool({
+//     host: 'localhost',
+//     user: 'root',
+//     password: 'a6289651',
+//     database: 'teleplay',
+//     // connectionLimit : 10
+// });
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'a6289651',
-    database: 'teleplay',
+    host: '127.0.0.1',
+    user: 'fsqm',
+    password: 'fsqm@123',
+    database: 'u_fsqm',
     // connectionLimit : 10
 });
 

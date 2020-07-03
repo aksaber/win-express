@@ -10,7 +10,8 @@ router.post('/', (req, res) => {
     // 保留扩展名
     form.keepExtensions = true;
     // 文件存储路径，最后要加 '/' 否则会被存在public下
-    form.uploadDir = path.join(__dirname, '../public/images/');
+    // form.uploadDir = path.join(__dirname, '../public/images/');
+    form.uploadDir = '/var/www/fsnode/web/source/';
     // 解析 formData 数据
     form.parse(req, (err, fields, files) => {
         if (err) return next(err);
