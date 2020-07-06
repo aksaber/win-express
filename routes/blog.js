@@ -65,6 +65,30 @@ router.get('/list', (req, res, next) => {
 
 })
 
+// 编辑博客
+router.post('/updateBlog', (req, res, next) => {
+
+    const {
+        id,
+        title,
+        author,
+        date,
+        tag,
+        type,
+        audio,
+        content,
+        coverImage
+    } = req.body;
+    const sql = `UPDATE fengshui SET title='${title}', author='${author}', tag='${tag}', content='${content}', coverImage='${coverImage}', type='${type}', audio='${audio}', date='${date}' where id='${id}'`
+    db.query(sql, (err, rows) => {
+        if (err) {
+            res.send(Unity.send(500, 1, 'error'));
+        } else {
+            res.send(Unity.send(200, 0, 'success'));
+        }
+    })
+})
+
 // 删除博客
 router.post('/delBlog', (req, res, next) => {
 
