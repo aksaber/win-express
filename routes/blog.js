@@ -255,7 +255,7 @@ router.post('/login', (req, res) => {
     let content = { name: req.body.account }; // 要生成token的主题信息
     let secretOrPrivateKey = "jwt";// 这是加密的key（密钥）
     let token = jwt.sign(content, secretOrPrivateKey, {
-        expiresIn: 60*60*1  // 1小时过期
+        expiresIn: 60*60*24*30  // 30天过期
     });
 
     const sql = `SELECT * FROM fengshui_user WHERE account='${account}'`;
@@ -325,7 +325,9 @@ router.post('/addBanner', (req, res, next) => {
         if (err) {
             res.send(Unity.send(500, 1, 'token失效，请重新登录'))
         } else {
-            const sql = `INSERT INTO fengshui_banner(image, url) VALUE('${req.body.image}', '${req.body.url}')`;
+            console.log(req.body, 'req.body')
+            const sql = `INSERT INTO fengshui_banner(image, url, sort) VALUE('${req.body.image}', '${req.body.url}', '${req.body.sort}')`;
+            console.log(sql, 'sql');
             db.query(sql, (err, rows) => {
                 if (err) {
                     res.send(Unity.send(500, 1, 'error'));
@@ -345,7 +347,7 @@ router.post('/updateBanner', (req, res, next) => {
         if (err) {
             res.send(Unity.send(500, 1, 'token失效，请重新登录'))
         } else {
-            const sql = `UPDATE fengshui_banner SET image='${req.body.image}', url='${req.body.url}' WHERE id='${req.body.id}'`;
+            const sql = `UPDATE fengshui_banner SET image='${req.body.image}', url='${req.body.url}', sort='${req.body.sort}' WHERE id='${req.body.id}'`;
             db.query(sql, (err, rows) => {
                 if (err) {
                     res.send(Unity.send(500, 1, 'error'));
@@ -406,6 +408,127 @@ router.post('/updateHeader', (req, res, next) => {
                     res.send(Unity.send(200, 0, 'success'));
                 }
             })
+        }
+    })
+})
+
+// 获取匿名占卜
+router.get('/getAnonymous', (req, res, next) => {
+
+    const sql = 'SELECT * FROM fengshui_order WHERE status = 0';
+    db.query(sql, (err, rows) => {
+        if (err) {
+            res.send(Unity.send(500, 1, 'error'));
+        } else {
+            res.send(Unity.send(200, 0, rows));
+        }
+    })
+})
+
+// 新增匿名占卜
+router.post('/addAnonymous', (req, res, next) => {
+    const now = new Date(req.body.time)
+    let month = now.getMonth() + 1
+    let day = now.getDate()
+    let hour = now.getHours()
+    let minutes = now.getMinutes()
+    let seconds = now.getSeconds()
+    // 生成随机订单号
+    function render(now, month, day, hour, minutes, seconds) {
+        return now.getFullYear().toString() + month.toString() + day + hour + minutes + seconds + (Math.round(Math.random() * 23 + 100)).toString()
+    }
+    // 格式化时间
+    function momentTime(now) {
+        return now.getFullYear() + '-' + month + '-' + day + ' ' + hour + ':' + minutes + ':' + seconds
+    }
+    let time = momentTime(now, month, day, hour, minutes, seconds);
+    let order = render(now, month, day, hour, minutes, seconds);
+    // 查询订单号是否存在
+    // const sql = `SELECT * FROM fengshui where type=${req.query.type}`
+    const sql = `SELECT * FROM fengshui_order where orders=${order}`
+    db.query(sql, (err, rows) => {
+        if (err) {
+            res.send(Unity.send(500, 1, 'errors'));
+        } else {
+            while (rows.length > 0) {
+                order = render();
+            }
+            // 生成订单
+            const sql = `INSERT INTO fengshui_order(orders, payOrder, question, time, status, hasUpdate) VALUE('${order}', '${req.body.payOrder}', '${req.body.question}', '${time}', '0', '0')`;
+            db.query(sql, (err, rows) => {
+                if (err) {
+                    console.log(err)
+                    res.send(Unity.send(500, 1, 'error'));
+                } else {
+                    res.send(Unity.send(200, 0, order));
+                }
+            })
+        }
+    })
+
+})
+
+// 匿名占卜解答 / 逻辑删除
+router.post('/updateAnonymous', (req, res, next) => {
+    let token = req.get('Authorization'); // 从Authorization中获取token
+    let secretOrPrivateKey = "jwt"; // 这是加密的key（密钥）
+    jwt.verify(token, secretOrPrivateKey, (err, decode) => {
+        if (err) {
+            res.send(Unity.send(500, 1, 'token失效，请重新登录'))
+        } else {
+            let sql = '';
+            if (req.body.status == 1) {
+                // 逻辑删除
+                sql = `UPDATE fengshui_order SET status='1' WHERE id='${req.body.id}'`;
+            } else {
+                // 修改
+                sql = `UPDATE fengshui_order SET answer='${req.body.answer}' WHERE id='${req.body.id}'`;
+            }
+            db.query(sql, (err, rows) => {
+                if (err) {
+                    res.send(Unity.send(500, 1, 'error'));
+                } else {
+                    res.send(Unity.send(200, 0, 'success'));
+                    // 删除服务器下的图片文件
+                }
+            })
+        }
+    })
+})
+
+// 匿名用户再次提问
+router.post('/reQuestAnonymous', (req, res, next) => {
+    sql = `UPDATE fengshui_order SET requestion='${req.body.question}', hasUpdate='0' WHERE orders='${req.body.order}'`;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            res.send(Unity.send(500, 1, 'error'));
+        } else {
+            res.send(Unity.send(200, 0, 'success'));
+        }
+    })
+})
+
+// 匿名用户更新解答
+router.post('/updateAnswer', (req, res, next) => {
+    sql = `UPDATE fengshui_order SET hasUpdate='1' WHERE id='${req.body.id}'`;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            res.send(Unity.send(500, 1, 'error'));
+        } else {
+            res.send(Unity.send(200, 0, 'success'));
+        }
+    })
+})
+
+// 通过订单号查询占卜结果
+router.post('/getAnoResult', (req, res, next) => {
+
+    const sql = `SELECT answer, hasUpdate FROM fengshui_order WHERE orders=${req.body.order}`;
+    db.query(sql, (err, rows) => {
+        if (err) {
+            res.send(Unity.send(500, 1, 'error'));
+        } else {
+            res.send(Unity.send(200, 0, rows));
         }
     })
 })
