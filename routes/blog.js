@@ -482,7 +482,7 @@ router.post('/updateAnonymous', (req, res, next) => {
                 sql = `UPDATE fengshui_order SET status='1' WHERE id='${req.body.id}'`;
             } else {
                 // 修改
-                sql = `UPDATE fengshui_order SET answer='${req.body.answer}' WHERE id='${req.body.id}'`;
+                sql = `UPDATE fengshui_order SET answer='${req.body.answer}', paipanImage='${req.body.paipanImage}' WHERE id='${req.body.id}'`;
             }
             db.query(sql, (err, rows) => {
                 if (err) {
@@ -523,7 +523,7 @@ router.post('/updateAnswer', (req, res, next) => {
 // 通过订单号查询占卜结果
 router.post('/getAnoResult', (req, res, next) => {
 
-    const sql = `SELECT answer, hasUpdate FROM fengshui_order WHERE orders=${req.body.order}`;
+    const sql = `SELECT answer, hasUpdate, paipanImage FROM fengshui_order WHERE orders=${req.body.order}`;
     db.query(sql, (err, rows) => {
         if (err) {
             res.send(Unity.send(500, 1, 'error'));
