@@ -47,35 +47,68 @@ router.post('/', (req, res, next) => {
 router.get('/list', (req, res, next) => {
 
     let sql = null;
+    let current = (req.query.currentPage-1) * req.query.pageSize;
     if (req.query.type) {
-        sql = `SELECT * FROM fengshui where type=${req.query.type}`;
+        // sql = `SELECT * FROM fengshui where type=${req.query.type}`;
+        sql = `SELECT * FROM fengshui where type=${req.query.type} limit ${current}, ${req.query.pageSize}`
+        sql2 = `SELECT COUNT(*) AS total FROM fengshui where type=${req.query.type}`;
     } else {
-        sql = `SELECT * FROM fengshui`;
+        sql = `SELECT * FROM fengshui limit ${current}, ${req.query.pageSize}`;
+        sql2 = `SELECT COUNT(*) AS total FROM fengshui`;
     }
-
-    db.query(sql, (err, rows) => {
+    db.queryMore(sql, sql2, (err, rows) => {
         if (err) {
             res.send(Unity.send(500, 1, err));
         } else {
-            rows = rows.map(item => {
-                return {
-                    id: item.id,
-                    title: item.title,
-                    author: item.author,
-                    date: item.date,
-                    content: item.content,
-                    coverImage: item.coverImage,
-                    abstract: item.abstract,
-                    type: item.type,
-                    audio: item.audio,
-                    intro: item.intro,
-                    tag: item.tag.split(',')
-                }
-            })
-            res.send(Unity.send(200, 0, rows));
+            let info = null;
+            if (rows.info && rows.info.length > 0) {
+                info = rows.info.map(item => {
+                    return {
+                        id: item.id,
+                        title: item.title,
+                        author: item.author,
+                        date: item.date,
+                        content: item.content,
+                        coverImage: item.coverImage,
+                        abstract: item.abstract,
+                        type: item.type,
+                        audio: item.audio,
+                        intro: item.intro,
+                        showBlog: item.showBlog,
+                        tag: item.tag.split(',')
+                    }
+                })
+            }
+            res.send({
+                code: 200,
+                msg: 'success',
+                data: info,
+                total: rows.total
+            });
         }
     })
 
+})
+
+// 隐藏博客
+router.post('/hideBlog', (req, res, next) => {
+    let token = req.get('Authorization'); // 从Authorization中获取token
+    let secretOrPrivateKey = "jwt"; // 这是加密的key（密钥）
+    jwt.verify(token, secretOrPrivateKey, (err, decode) => {
+        if (err) {
+            res.send(Unity.send(500, 1, 'token失效，请重新登录'))
+        } else {
+            const sql = `UPDATE fengshui SET showBlog=${req.body.showBlog} where id=${req.body.id}`
+            db.query(sql, (err, rows) => {
+                if (err) {
+                    res.send(Unity.send(500, 1, err));
+                    console.log(err);
+                } else {
+                    res.send(Unity.send(200, 0, 'success'));
+                }
+            })
+        }
+    })
 })
 
 // 编辑博客
@@ -211,6 +244,7 @@ router.get('/detail', (req, res, next) => {
                     intro: item.intro,
                     type: item.type,
                     audio: item.audio,
+                    showBlog: item.showBlog,
                     tag: item.tag.split(',')
                 }
             })
